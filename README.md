@@ -1,6 +1,6 @@
 # Text Entry Throughput
 
-The code accompanying our (paper)[http://doi.acm.org/10.1145/3290605.3300866] \(to appear\) for calculating text entry Throughput
+The code accompanying our [paper](http://doi.acm.org/10.1145/3290605.3300866) \(to appear\) for calculating text entry Throughput
 
 ## Getting Started
 
