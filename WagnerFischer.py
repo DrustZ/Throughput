@@ -240,8 +240,8 @@ class WagnerFischer(object):
         npaths = 0
         opcounts = collections.Counter()
         for alignment in self.alignments():
-            # Counts edit types for this path, ignoring "M" (which is free).
-            opcounts += collections.Counter(op for op in alignment if op != "M")
+            # Counts edit types for this path
+            opcounts += collections.Counter(op for op in alignment)
             npaths += 1
         # Averages over all paths.
         return collections.Counter({o: c / npaths for (o, c) in

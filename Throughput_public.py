@@ -1,3 +1,30 @@
+# Copyright (c) 2018 Mingrui Zhang
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+# Throughput_public.py : calculate throughput from a text transcription json file
+# Reference paper:
+# Mingrui “Ray” Zhang, Shumin Zhai, Jacob O. Wobbrock. 2019. 
+# Text Entry Throughput: Towards Unifying Speed and Accuracy in a Single Performance Metric. 
+# In 2019 CHI Conference on Human Factors in Computing Systems Proceedings (CHI 2019)
+
 from WagnerFischer import WagnerFischer as Edit
 import json
 import string
@@ -25,9 +52,14 @@ class Throughput(object):
             self.json = json.load(open(filename))
         except Exception as e:
             raise "can not find the json file"
+        # Instances of each transcription trial data
         self.trials = []
-        self.table = np.zeros((28, 28)) #p(x,y)
+        
+        # Transmission prob table p(i,j), from 'a-z', space, null to 'a-z', space, null
+        self.table = np.zeros((28, 28)) 
+        # Character distribution of 'a' to 'z', space and null
         self.prob = np.zeros(28)
+
         self.totalTime = 0.0 # total transcription time in sec
         self.totalChar = 0.0 # total characters in presented string
         self.cps = 0 # char per second
@@ -41,6 +73,7 @@ class Throughput(object):
             self.trials.append([item["Present"].lower().translate(translator), item["Transcribe"].lower().translate(translator), \
                                 (item["Time"]) / 1000.0])
 
+    '''Function for calculating the transmission probability table (P(i,j))'''
     def calErrorTable(self):
         for trial in self.trials:
             #Get edit distance
@@ -90,19 +123,32 @@ class Throughput(object):
         #Turn count into probability
         self.table /= max(allcount, 1.0)
 
+    """The function for calculating Throughput"""
     def calThroughput(self):
-        self.cps = self.totalChar / max(self.totalTime, 0.0001)
-        
+        # Step 1: the source entropy from English Letter Distribution
+        source_entropy = - (char_freq * np.log2(char_freq)).sum()
+
+        # Step 2: calculate transmission probs
+        self.calErrorTable()
+
         prob_table = np.copy(self.table)
         char_prob = np.copy(self.prob)
         freq = np.copy(char_freq)
 
-        #change to freq according to eng language
+        # After including the null character 
+        # We need to normalize the other character's distribution
+        # P`(i) = p(i)*(1-p(null)) 
+        # According to formula 5 in the paper
         char_prob[:-1] = (1-self.prob[-1]) * freq/freq.sum()
+        # Here, we sum all probs of each error to get the overall error prob
+        # According to formula 8, 9, 10 and 11
+        # Then average them.
+        # According to formula 12
         omit_prob    = self.table.sum(axis=0)[-1]
         insert_prob  = self.table.sum(axis=1)[-1]
         same_prob    = self.table.trace()
         sub_prob     = max(1.0 - (omit_prob+insert_prob+same_prob), 0)
+
         prob_table[-1, :-1] = insert_prob / 27.0
         prob_table[:-1, -1] = char_prob[:-1] * (omit_prob/(1-insert_prob))
         pt_trans = prob_table.transpose()
@@ -111,10 +157,10 @@ class Throughput(object):
         for i in range(27):
             prob_table[i, i] = char_prob[i] * (same_prob / (1-insert_prob))
 
-        # the source entropy
-        source_entropy = - (char_freq * np.log2(char_freq)).sum()
-        
+        # After getting the average error prob from each character
+        # We can calculate
         # the receiver(transcription) entropy
+        # According to formula 6, 7 and 4
         transcribe_entropy = 0
         sum_y = np.sum(prob_table, axis = 0)
         for i in range(28): # every source char
@@ -124,5 +170,8 @@ class Throughput(object):
                 if p_xy != 0:
                     transcribe_entropy -= p_xy * np.log2(py_x)  
 
+        # Calculate speed: character per second 
+        self.cps = self.totalChar / max(self.totalTime, 0.0001)
+        # Throughput is the mutual information * cps
         return (source_entropy-transcribe_entropy) * self.cps
 
