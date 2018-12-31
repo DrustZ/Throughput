@@ -1,3 +1,5 @@
+# This is a file adapted from the original code
+# https://gist.github.com/kylebgorman/8034009
 # Copyright (c) 2013-2016 Kyle Gorman
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
