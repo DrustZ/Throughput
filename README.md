@@ -2,6 +2,8 @@
 
 The code accompanying our [paper](http://doi.acm.org/10.1145/3290605.3300866) for calculating text entry Throughput
 
+The text test platform is also available [here](https://github.com/DrustZ/TextTestPP).
+
 ## Getting Started
 
 If you want to use this code to calculate the throughput for your transcription experiments, please first download all the codes. The ensure that your experiment data is stored in a json file. The json file includes information Present string, Transcribed string and total time. 
