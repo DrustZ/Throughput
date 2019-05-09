@@ -2,6 +2,8 @@
 
 The code accompanying our [paper](http://doi.acm.org/10.1145/3290605.3300866) for calculating text entry Throughput
 
+Here's my [blog on throughput](https://drustz.com/posts/2019/04/28/Throughput1/) explaining all the magic
+
 The text test platform is also available [here](https://github.com/DrustZ/TextTestPP).
 
 ## Getting Started
