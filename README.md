@@ -22,6 +22,9 @@ numpy
 
 * [**Mingrui "Ray" Zhang**](http://drustz.com)
 
+## Experiment Data
+The data of the experiment is public on https://drive.google.com/file/d/14CBfEVFRuJuQZzrE7kcD_hmZA8kU2NL0/view?usp=sharing
+
 ## Citation
 If you use the code in your paper, then please cite it as:
 
