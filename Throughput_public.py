@@ -70,7 +70,7 @@ class Throughput(object):
         # read data from the file
         for item in self.json:
             #[P, T, time] #time unit: second
-            self.trials.append([item["Present"].lower().translate(translator), item["Transcribe"].lower().translate(translator), \
+            self.trials.append([item["Present"].lower().translate(translator), item["Transcribed"].lower().translate(translator), \
                                 (item["Time"]) / 1000.0])
 
     '''Function for calculating the transmission probability table (P(i,j))'''
